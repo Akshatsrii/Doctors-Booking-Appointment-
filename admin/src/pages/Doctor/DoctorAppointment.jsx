@@ -3,7 +3,7 @@ import { useDoctorContext } from "../../context/DoctorContext";
 import { X, Check } from "lucide-react";
 
 const DoctorAppointment = () => {
-  const { getDoctorAppointments, appointments, loading } =
+  const { getDoctorAppointments, appointments, loading, cancelAppointmentDoctor, completeAppointmentDoctor } =
     useDoctorContext();
 
   useEffect(() => {
@@ -120,17 +120,23 @@ const DoctorAppointment = () => {
                         <span className="text-red-500 font-medium">
                           Cancelled
                         </span>
+                      ) : item.isCompleted ? (
+                        <span className="text-green-500 font-medium">
+                          Completed
+                        </span>
                       ) : (
                         <div className="flex items-center justify-center gap-3">
                           <button
-                            className="w-8 h-8 rounded-full border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center"
+                            onClick={() => cancelAppointmentDoctor(item._id)}
+                            className="w-8 h-8 rounded-full border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center cursor-pointer transition-colors"
                             title="Cancel"
                           >
                             <X size={16} />
                           </button>
                           <button
-                            className="w-8 h-8 rounded-full border border-green-200 text-green-600 hover:bg-green-50 flex items-center justify-center"
-                            title="Confirm"
+                            onClick={() => completeAppointmentDoctor(item._id)}
+                            className="w-8 h-8 rounded-full border border-green-200 text-green-600 hover:bg-green-50 flex items-center justify-center cursor-pointer transition-colors"
+                            title="Complete"
                           >
                             <Check size={16} />
                           </button>
