@@ -8,8 +8,8 @@ import {
   doctorProfile,
   updateDoctorProfile,
   cancelAppointmentDoctor,
-  completeAppointmentDoctor,
   addPrescriptionDoctor,
+  markPaymentPaidDoctor,
 } from "../controllers/doctorController.js";
 import authDoctor from "../middlewares/authDoctor.js";
 
@@ -91,6 +91,12 @@ doctorRouter.post(
   "/add-prescription",
   authDoctor,
   addPrescriptionDoctor
+);
+
+doctorRouter.post(
+  "/mark-paid",
+  authDoctor,
+  markPaymentPaidDoctor
 );
 
 export default doctorRouter;

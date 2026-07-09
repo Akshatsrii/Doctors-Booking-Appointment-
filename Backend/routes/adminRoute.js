@@ -5,8 +5,9 @@ import {
   getAllDoctors,
   changeAvailability,
   appointmentsAdmin,
-  cancelAppointmentAdmin, // ✅ ADD THIS
-  adminDashboard, // ✅ ADD
+  cancelAppointmentAdmin,
+  adminDashboard,
+  markPaymentPaidAdmin,
 } from "../controllers/adminController.js";
 import upload from "../middlewares/multer.js";
 import authAdmin from "../middlewares/authAdmin.js";
@@ -57,6 +58,13 @@ adminRouter.get(
   "/dashboard",
   authAdmin,
   adminDashboard
+);
+
+// 💳 MARK PAID
+adminRouter.post(
+  "/mark-paid",
+  authAdmin,
+  markPaymentPaidAdmin
 );
 
 export default adminRouter;
