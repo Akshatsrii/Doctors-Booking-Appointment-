@@ -18,7 +18,7 @@ import ChatBot from './components/ChatBot'   // ✅ CHATBOT IMPORT
 
 const App = () => {
   return (
-    <div className="mx-4 sm:mx-[10%]">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
       <ToastContainer />
       <Navbar />
 
