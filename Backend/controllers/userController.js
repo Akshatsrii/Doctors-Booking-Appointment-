@@ -231,27 +231,28 @@ const payAppointment = async (req, res) => {
     const { appointmentId } = req.body;
 
     const appointment = await appointmentModel.findById(appointmentId);
-    if (!appointment) {
-      return res.json({ success: false, message: "Appointment not found" });
+    if (!appointment || appointment.isCancelled) {
+      return res.json({ success: false, message: "Appointment not found or cancelled" });
     }
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
+      payment_method_types: ["card", "upi"],
       mode: "payment",
       line_items: [
         {
           price_data: {
             currency: "inr",
             product_data: {
-              name: "Doctor Appointment",
+              name: `Consultation with Dr. ${appointment.docData.name}`,
+              description: `Speciality: ${appointment.docData.speciality} | Slot: ${appointment.slotDate} at ${appointment.slotTime}`,
             },
             unit_amount: appointment.amount * 100,
           },
           quantity: 1,
         },
       ],
-      success_url: `${process.env.FRONTEND_URL}/payment-success/${appointmentId}`,
-      cancel_url: `${process.env.FRONTEND_URL}/payment-cancel`,
+      success_url: `${process.env.FRONTEND_URL}/verify-payment?success=true&appointmentId=${appointmentId}`,
+      cancel_url: `${process.env.FRONTEND_URL}/verify-payment?success=false&appointmentId=${appointmentId}`,
     });
 
     res.json({
@@ -322,6 +323,54 @@ const confirmPayment = async (req, res) => {
   }
 };
 
+/* ================= STRIPE PAYMENT VERIFICATION ================= */
+const verifyStripe = async (req, res) => {
+  try {
+    const { appointmentId, success } = req.body;
+    if (success === "true") {
+      await appointmentModel.findByIdAndUpdate(appointmentId, {
+        isPaid: true,
+        paymentMethod: "online",
+      });
+      res.json({ success: true, message: "Payment verified successfully" });
+    } else {
+      res.json({ success: false, message: "Payment failed or cancelled" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+/* ================= SELECT PAYMENT METHOD ================= */
+const selectPaymentMethod = async (req, res) => {
+  try {
+    const { appointmentId, method } = req.body; // method: "online" or "cash"
+    if (!["online", "cash"].includes(method)) {
+      return res.json({ success: false, message: "Invalid payment method" });
+    }
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment) {
+      return res.json({ success: false, message: "Appointment not found" });
+    }
+
+    appointment.paymentMethod = method;
+    if (method === "cash") {
+      appointment.isPaid = false;
+    }
+    await appointment.save();
+
+    res.json({
+      success: true,
+      message: `Payment method set to ${method === "cash" ? "Pay at Clinic" : "Online via Stripe"}`,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   registerUser,
   loginUser,
@@ -329,7 +378,9 @@ export {
   updateProfile,
   bookAppointment,
   myAppointments,
-  payAppointment,      // Stripe session
-  confirmPayment,      // after success
+  payAppointment,
+  confirmPayment,
   cancelAppointment,
+  verifyStripe,
+  selectPaymentMethod,
 };
