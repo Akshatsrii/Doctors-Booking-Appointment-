@@ -266,12 +266,31 @@ const adminDashboard = async (req, res) => {
 };
 
 
+const markPaymentPaidAdmin = async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment) {
+      return res.json({ success: false, message: "Appointment not found" });
+    }
+
+    appointment.isPaid = true;
+    await appointment.save();
+
+    res.json({ success: true, message: "Appointment marked as paid" });
+  } catch (error) {
+    console.error("Mark paid admin error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   addDoctor,
   loginAdmin,
   getAllDoctors,
   changeAvailability,
-  appointmentsAdmin, // ✅ IMPORTANT
+  appointmentsAdmin,
   cancelAppointmentAdmin,
-  adminDashboard, // ✅ ADD THIS
+  adminDashboard,
+  markPaymentPaidAdmin,
 };

@@ -306,6 +306,30 @@ const addPrescriptionDoctor = async (req, res) => {
   }
 };
 
+const markPaymentPaidDoctor = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const { appointmentId } = req.body;
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment) {
+      return res.json({ success: false, message: "Appointment not found" });
+    }
+
+    if (appointment.docId.toString() !== docId.toString()) {
+      return res.json({ success: false, message: "Unauthorized access" });
+    }
+
+    appointment.isPaid = true;
+    await appointment.save();
+
+    res.json({ success: true, message: "Appointment marked as paid" });
+  } catch (error) {
+    console.error("Mark paid doctor error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   changeAvailability,
   loginDoctor,
@@ -316,4 +340,5 @@ export {
   cancelAppointmentDoctor,
   completeAppointmentDoctor,
   addPrescriptionDoctor,
+  markPaymentPaidDoctor,
 };
