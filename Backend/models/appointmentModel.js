@@ -67,6 +67,11 @@ const appointmentSchema = new mongoose.Schema(
       default: false,
     },
 
+    isCompleted: {
+      type: Boolean,
+      default: false,
+    },
+
     /* ================= CREATED DATE ================= */
     date: {
       type: Number,
