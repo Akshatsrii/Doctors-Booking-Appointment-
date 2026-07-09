@@ -6,9 +6,8 @@ import { AppContext } from "../context/AppContext";
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData } = useContext(AppContext);
+  const { userData, token, logout } = useContext(AppContext);
   const [showMenu, setShowMenu] = useState(false);
-  const [token, setToken] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
@@ -45,7 +44,7 @@ const Navbar = () => {
   }, [showMenu]);
 
   const handleLogout = () => {
-    setToken(false);
+    logout();
     setShowDropdown(false);
     navigate("/");
   };
