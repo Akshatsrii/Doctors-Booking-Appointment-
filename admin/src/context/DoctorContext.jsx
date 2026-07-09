@@ -164,6 +164,32 @@ const DoctorContextProvider = ({ children }) => {
     }
   };
 
+  const markPaymentPaidDoctor = async (appointmentId) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("dToken");
+      if (!token) return;
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/doctor/mark-paid`,
+        { appointmentId },
+        { headers: { dtoken: token } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getDoctorAppointments();
+        getDoctorDashboard();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Failed to mark payment as paid");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     dToken,
     setDToken,
@@ -176,6 +202,7 @@ const DoctorContextProvider = ({ children }) => {
     cancelAppointmentDoctor,
     completeAppointmentDoctor,
     addPrescriptionDoctor,
+    markPaymentPaidDoctor,
   };
 
   return (

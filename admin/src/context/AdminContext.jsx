@@ -133,6 +133,30 @@ const AdminContextProvider = ({ children }) => {
     }
   };
 
+  const markPaymentPaidAdmin = async (appointmentId) => {
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/admin/mark-paid`,
+        { appointmentId },
+        {
+          headers: {
+            Authorization: `Bearer ${aToken}`,
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getAllAppointments();
+        getDashboardData();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Failed to mark payment as paid");
+    }
+  };
+
   /* 🔁 AUTO LOAD AFTER LOGIN */
   useEffect(() => {
     if (aToken) {
@@ -157,6 +181,7 @@ const AdminContextProvider = ({ children }) => {
 
     dashData,          // ✅ EXPOSE
     getDashboardData,  // ✅ EXPOSE
+    markPaymentPaidAdmin,
   };
 
   return (
