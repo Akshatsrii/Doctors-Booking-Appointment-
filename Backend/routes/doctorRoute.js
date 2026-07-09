@@ -7,6 +7,8 @@ import {
   doctorDashboard,
   doctorProfile,
   updateDoctorProfile,
+  cancelAppointmentDoctor,
+  completeAppointmentDoctor,
 } from "../controllers/doctorController.js";
 import authDoctor from "../middlewares/authDoctor.js";
 
@@ -26,7 +28,7 @@ doctorRouter.get("/list", async (req, res) => {
   try {
     const doctors = await doctorModel
       .find({ available: true })
-      .select("-password -slots_booked")
+      .select("-password")
       .sort({ createdAt: -1 });
 
     res.json({
@@ -70,6 +72,18 @@ doctorRouter.put(
   "/update-profile",
   authDoctor,
   updateDoctorProfile
+);
+
+doctorRouter.post(
+  "/cancel-appointment",
+  authDoctor,
+  cancelAppointmentDoctor
+);
+
+doctorRouter.post(
+  "/complete-appointment",
+  authDoctor,
+  completeAppointmentDoctor
 );
 
 export default doctorRouter;

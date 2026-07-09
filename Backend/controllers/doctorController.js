@@ -205,4 +205,80 @@ const updateDoctorProfile = async (req, res) => {
   }
 };
 
-export { changeAvailability, loginDoctor, appointmentsDoctor, doctorDashboard , doctorProfile, updateDoctorProfile };
+const cancelAppointmentDoctor = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const { appointmentId } = req.body;
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment) {
+      return res.json({ success: false, message: "Appointment not found" });
+    }
+
+    if (appointment.docId.toString() !== docId.toString()) {
+      return res.json({ success: false, message: "Unauthorized access" });
+    }
+
+    if (appointment.isCancelled) {
+      return res.json({ success: false, message: "Appointment already cancelled" });
+    }
+
+    appointment.isCancelled = true;
+    appointment.status = "cancelled";
+    await appointment.save();
+
+    // Free slot
+    if (appointment.slotDate && appointment.slotTime) {
+      await doctorModel.findByIdAndUpdate(docId, {
+        $pull: {
+          [`slots_booked.${appointment.slotDate}`]: appointment.slotTime,
+        },
+      });
+    }
+
+    res.json({ success: true, message: "Appointment cancelled successfully" });
+  } catch (error) {
+    console.error("Doctor cancel appointment error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const completeAppointmentDoctor = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const { appointmentId } = req.body;
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment) {
+      return res.json({ success: false, message: "Appointment not found" });
+    }
+
+    if (appointment.docId.toString() !== docId.toString()) {
+      return res.json({ success: false, message: "Unauthorized access" });
+    }
+
+    if (appointment.isCancelled) {
+      return res.json({ success: false, message: "Cannot complete a cancelled appointment" });
+    }
+
+    appointment.isCompleted = true;
+    appointment.status = "confirmed";
+    await appointment.save();
+
+    res.json({ success: true, message: "Appointment marked as completed" });
+  } catch (error) {
+    console.error("Doctor complete appointment error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export {
+  changeAvailability,
+  loginDoctor,
+  appointmentsDoctor,
+  doctorDashboard,
+  doctorProfile,
+  updateDoctorProfile,
+  cancelAppointmentDoctor,
+  completeAppointmentDoctor,
+};
