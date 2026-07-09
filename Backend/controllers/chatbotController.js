@@ -19,9 +19,9 @@ export const chatbotReply = async (req, res) => {
       return res.json({ reply: "Hello! Please type your health concern or question." });
     }
 
-    // 2. Prepare the Request for Gemini 2.5 Flash
+    // 2. Prepare the Request for Gemini 1.5 Flash
     // Note: v1beta is used for the latest 2026 features
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
     const systemPrompt = `
       You are the official AI Assistant for Prescripto, a modern Doctor Appointment & Healthcare Management System.
