@@ -11,6 +11,7 @@ import Contact from './pages/Contact'
 import MyProfile from './pages/MyProfile'
 import MyAppointments from './pages/MyAppointments'
 import Appointment from './pages/Appointment'
+import VerifyPayment from './pages/VerifyPayment'
 
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -32,6 +33,7 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/my-appointments" element={<MyAppointments />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
+        <Route path="/verify-payment" element={<VerifyPayment />} />
       </Routes>
 
       <Footer />
