@@ -72,6 +72,18 @@ const appointmentSchema = new mongoose.Schema(
       default: false,
     },
 
+    prescription: {
+      medicines: [
+        {
+          name: { type: String },
+          dosage: { type: String },
+          duration: { type: String },
+        }
+      ],
+      instructions: { type: String },
+      prescribedAt: { type: Date },
+    },
+
     /* ================= CREATED DATE ================= */
     date: {
       type: Number,
