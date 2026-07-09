@@ -270,6 +270,8 @@ const completeAppointmentDoctor = async (req, res) => {
     console.error("Doctor complete appointment error:", error);
     res.json({ success: false, message: error.message });
   }
+};
+
 const addPrescriptionDoctor = async (req, res) => {
   try {
     const docId = req.docId;
