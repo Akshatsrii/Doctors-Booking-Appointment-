@@ -270,6 +270,38 @@ const completeAppointmentDoctor = async (req, res) => {
     console.error("Doctor complete appointment error:", error);
     res.json({ success: false, message: error.message });
   }
+const addPrescriptionDoctor = async (req, res) => {
+  try {
+    const docId = req.docId;
+    const { appointmentId, medicines, instructions } = req.body;
+
+    const appointment = await appointmentModel.findById(appointmentId);
+    if (!appointment) {
+      return res.json({ success: false, message: "Appointment not found" });
+    }
+
+    if (appointment.docId.toString() !== docId.toString()) {
+      return res.json({ success: false, message: "Unauthorized access" });
+    }
+
+    if (appointment.isCancelled) {
+      return res.json({ success: false, message: "Cannot prescribe for a cancelled appointment" });
+    }
+
+    appointment.prescription = {
+      medicines,
+      instructions,
+      prescribedAt: new Date(),
+    };
+    appointment.isCompleted = true;
+    appointment.status = "confirmed";
+    await appointment.save();
+
+    res.json({ success: true, message: "Prescription saved successfully" });
+  } catch (error) {
+    console.error("Doctor prescribe error:", error);
+    res.json({ success: false, message: error.message });
+  }
 };
 
 export {
@@ -281,4 +313,5 @@ export {
   updateDoctorProfile,
   cancelAppointmentDoctor,
   completeAppointmentDoctor,
+  addPrescriptionDoctor,
 };
