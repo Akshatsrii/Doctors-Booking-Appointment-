@@ -58,9 +58,24 @@ const Appointment = () => {
           minute: '2-digit',
         })
 
+        let day = currentDate.getDate()
+        let month = currentDate.getMonth() + 1
+        let year = currentDate.getFullYear()
+        
+        let tempDate = new Date(year, month - 1, day, 10, 0, 0, 0)
+        let slotDateKey = tempDate.toISOString().split('T')[0]
+
+        let isBooked = false
+        if (docInfo && docInfo.slots_booked && docInfo.slots_booked[slotDateKey]) {
+          if (docInfo.slots_booked[slotDateKey].includes(formattedTime)) {
+            isBooked = true;
+          }
+        }
+
         timeSlots.push({
           datetime: new Date(currentDate),
           time: formattedTime,
+          isBooked: isBooked,
         })
 
         currentDate.setMinutes(currentDate.getMinutes() + 30)
@@ -198,11 +213,13 @@ const Appointment = () => {
             docSlots[slotIndex].map((item, index) => (
               <p
                 key={index}
-                onClick={() => setSlotTime(item.time)}
+                onClick={() => !item.isBooked && setSlotTime(item.time)}
                 className={`text-sm font-light flex-shrink-0 px-5 py-2 rounded-full cursor-pointer ${
-                  item.time === slotTime
+                  item.isBooked
+                    ? 'bg-gray-100 text-gray-300 border border-gray-200 cursor-not-allowed line-through'
+                    : item.time === slotTime
                     ? 'bg-[#5f6FFF] text-white'
-                    : 'text-gray-400 border border-gray-300'
+                    : 'text-gray-400 border border-gray-300 hover:border-blue-300'
                 }`}
               >
                 {item.time.toLowerCase()}
