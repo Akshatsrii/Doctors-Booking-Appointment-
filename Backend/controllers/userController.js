@@ -211,7 +211,6 @@ const myAppointments = async (req, res) => {
 
     const appointments = await appointmentModel.find({
       userId,
-      isCancelled: false, // ✅ STRICT FILTER
     }).sort({ date: -1 });
 
     res.json({
@@ -276,9 +275,19 @@ const cancelAppointment = async (req, res) => {
       return res.json({ success: false, message: "Appointment not found" });
     }
 
+    // 🔐 Security: Check if user owns this appointment
+    if (appointment.userId.toString() !== req.userId.toString()) {
+      return res.json({ success: false, message: "Unauthorized action" });
+    }
+
+    if (appointment.isCancelled) {
+      return res.json({ success: false, message: "Appointment already cancelled" });
+    }
+
     // 🔴 FORCE UPDATE
     await appointmentModel.findByIdAndUpdate(appointmentId, {
       isCancelled: true,
+      status: "cancelled",
     });
 
     // 🔓 free slot
