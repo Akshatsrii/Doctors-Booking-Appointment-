@@ -83,6 +83,58 @@ const DoctorContextProvider = ({ children }) => {
     localStorage.removeItem("dToken");
   };
 
+  const cancelAppointmentDoctor = async (appointmentId) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("dToken");
+      if (!token) return;
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/doctor/cancel-appointment`,
+        { appointmentId },
+        { headers: { dtoken: token } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getDoctorAppointments();
+        getDoctorDashboard();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Failed to cancel appointment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const completeAppointmentDoctor = async (appointmentId) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("dToken");
+      if (!token) return;
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/doctor/complete-appointment`,
+        { appointmentId },
+        { headers: { dtoken: token } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getDoctorAppointments();
+        getDoctorDashboard();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Failed to complete appointment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     dToken,
     setDToken,
@@ -90,8 +142,10 @@ const DoctorContextProvider = ({ children }) => {
     dashboardData,
     loading,
     getDoctorAppointments,
-    getDoctorDashboard, // 🔥 THIS WAS MISSING
+    getDoctorDashboard,
     logoutDoctor,
+    cancelAppointmentDoctor,
+    completeAppointmentDoctor,
   };
 
   return (
