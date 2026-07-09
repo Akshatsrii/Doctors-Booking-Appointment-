@@ -8,6 +8,7 @@ import {
   doctorProfile,
   updateDoctorProfile,
   cancelAppointmentDoctor,
+  completeAppointmentDoctor,
   addPrescriptionDoctor,
   markPaymentPaidDoctor,
 } from "../controllers/doctorController.js";
