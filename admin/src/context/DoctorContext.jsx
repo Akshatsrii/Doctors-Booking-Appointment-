@@ -135,6 +135,35 @@ const DoctorContextProvider = ({ children }) => {
     }
   };
 
+  const addPrescriptionDoctor = async (appointmentId, medicines, instructions) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("dToken");
+      if (!token) return false;
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/doctor/add-prescription`,
+        { appointmentId, medicines, instructions },
+        { headers: { dtoken: token } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        getDoctorAppointments();
+        getDoctorDashboard();
+        return true;
+      } else {
+        toast.error(data.message);
+        return false;
+      }
+    } catch (error) {
+      toast.error("Failed to save prescription");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     dToken,
     setDToken,
@@ -146,6 +175,7 @@ const DoctorContextProvider = ({ children }) => {
     logoutDoctor,
     cancelAppointmentDoctor,
     completeAppointmentDoctor,
+    addPrescriptionDoctor,
   };
 
   return (
