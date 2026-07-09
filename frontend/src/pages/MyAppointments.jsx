@@ -20,10 +20,7 @@ const MyAppointments = () => {
       );
 
       if (data.success) {
-        const activeAppointments = data.appointments.filter(
-          (item) => item.isCancelled !== true
-        );
-        setAppointments(activeAppointments);
+        setAppointments(data.appointments);
       } else {
         toast.error(data.message);
       }
@@ -69,61 +66,73 @@ const MyAppointments = () => {
 
           <div className="flex flex-col gap-2 justify-end">
 
-            {!item.isPaid && (
-              <button
-                onClick={async () => {
-                  try {
-                    const { data } = await axios.post(
-                      `${backendUrl}/api/user/pay-appointment`,
-                      { appointmentId: item._id },
-                      {
-                        headers: { Authorization: `Bearer ${token}` },
-                      }
-                    );
-
-                    if (data.success && data.sessionUrl) {
-                      window.location.href = data.sessionUrl; // 🔥 STRIPE
-                    }
-                  } catch {
-                    toast.error("Payment initiation failed");
-                  }
-                }}
-                className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-primary hover:text-white transition"
-              >
-                Pay Online
-              </button>
+            {item.isCancelled && (
+              <span className="sm:min-w-48 py-2 border border-red-500 rounded text-sm text-red-500 text-center font-medium bg-red-50">
+                Appointment Cancelled
+              </span>
             )}
 
-            {!item.isCancelled && (
-              <button
-                onClick={async () => {
-                  try {
-                    const { data } = await axios.post(
-                      `${backendUrl}/api/user/cancel-appointment`,
-                      { appointmentId: item._id },
-                      {
-                        headers: { Authorization: `Bearer ${token}` },
-                      }
-                    );
+            {item.isCompleted && (
+              <span className="sm:min-w-48 py-2 border border-green-500 rounded text-sm text-green-500 text-center font-medium bg-green-50">
+                Completed
+              </span>
+            )}
 
-                    if (data.success) {
-                      toast.success(data.message);
-                      setAppointments((prev) =>
-                        prev.filter((appt) => appt._id !== item._id)
+            {!item.isCancelled && !item.isCompleted && (
+              <>
+                {!item.isPaid && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const { data } = await axios.post(
+                          `${backendUrl}/api/user/pay-appointment`,
+                          { appointmentId: item._id },
+                          {
+                            headers: { Authorization: `Bearer ${token}` },
+                          }
+                        );
+
+                        if (data.success && data.sessionUrl) {
+                          window.location.href = data.sessionUrl;
+                        }
+                      } catch {
+                        toast.error("Payment initiation failed");
+                      }
+                    }}
+                    className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-primary hover:text-white transition"
+                  >
+                    Pay Online
+                  </button>
+                )}
+
+                <button
+                  onClick={async () => {
+                    try {
+                      const { data } = await axios.post(
+                        `${backendUrl}/api/user/cancel-appointment`,
+                        { appointmentId: item._id },
+                        {
+                          headers: { Authorization: `Bearer ${token}` },
+                        }
                       );
+
+                      if (data.success) {
+                        toast.success(data.message);
+                        getMyAppointments();
+                      }
+                    } catch {
+                      toast.error("Cancel failed");
                     }
-                  } catch {
-                    toast.error("Cancel failed");
-                  }
-                }}
-                className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-red-500 hover:text-white transition"
-              >
-                Cancel appointment
-              </button>
+                  }}
+                  className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-red-500 hover:text-white transition"
+                >
+                  Cancel appointment
+                </button>
+              </>
             )}
 
-            {item.isPaid && (
-              <span className="text-green-600 font-medium text-sm">
+            {item.isPaid && !item.isCancelled && (
+              <span className="text-green-600 font-medium text-sm text-center">
                 Payment Completed
               </span>
             )}
