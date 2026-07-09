@@ -1,4 +1,14 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", "Inter", sans-serif;
+  --color-primary: #5f6fff;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #fcfdfd;
+}
 /* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar {
     display: none;
