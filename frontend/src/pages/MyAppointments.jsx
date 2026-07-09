@@ -9,6 +9,24 @@ const MyAppointments = () => {
   const [showRxModal, setShowRxModal] = useState(false);
   const [selectedRx, setSelectedRx] = useState(null);
 
+  const selectPaymentMethod = async (appointmentId, method) => {
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/select-payment-method`,
+        { appointmentId, method },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getMyAppointments();
+      } else {
+        toast.error(data.message);
+      }
+    } catch {
+      toast.error("Failed to update payment method");
+    }
+  };
+
   const getMyAppointments = async () => {
     if (!token) return;
 
@@ -93,28 +111,53 @@ const MyAppointments = () => {
             {!item.isCancelled && !item.isCompleted && (
               <>
                 {!item.isPaid && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const { data } = await axios.post(
-                          `${backendUrl}/api/user/pay-appointment`,
-                          { appointmentId: item._id },
-                          {
-                            headers: { Authorization: `Bearer ${token}` },
-                          }
-                        );
+                  <div className="flex flex-col gap-2 w-full sm:w-auto">
+                    {item.paymentMethod === "cash" ? (
+                      <>
+                        <span className="text-xs text-yellow-600 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-250 text-center font-semibold">
+                          Clinic Payment (Pending)
+                        </span>
+                        <button
+                          onClick={() => selectPaymentMethod(item._id, "online")}
+                          className="sm:min-w-48 py-2 border border-indigo-200 rounded text-sm text-indigo-650 hover:bg-indigo-50 transition cursor-pointer font-semibold"
+                        >
+                          Switch to Online Payment
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-xs text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200 text-center font-semibold">
+                          Online Payment Pending
+                        </span>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const { data } = await axios.post(
+                                `${backendUrl}/api/user/pay-appointment`,
+                                { appointmentId: item._id },
+                                { headers: { Authorization: `Bearer ${token}` } }
+                              );
 
-                        if (data.success && data.sessionUrl) {
-                          window.location.href = data.sessionUrl;
-                        }
-                      } catch {
-                        toast.error("Payment initiation failed");
-                      }
-                    }}
-                    className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-primary hover:text-white transition"
-                  >
-                    Pay Online
-                  </button>
+                              if (data.success && data.sessionUrl) {
+                                window.location.href = data.sessionUrl;
+                              }
+                            } catch {
+                              toast.error("Payment initiation failed");
+                            }
+                          }}
+                          className="sm:min-w-48 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded text-sm font-bold shadow-sm hover:shadow transition cursor-pointer text-center"
+                        >
+                          Pay Online (Card / UPI)
+                        </button>
+                        <button
+                          onClick={() => selectPaymentMethod(item._id, "cash")}
+                          className="sm:min-w-48 py-2 border border-stone-300 rounded text-sm text-stone-650 hover:bg-stone-50 transition cursor-pointer font-semibold"
+                        >
+                          Pay at Clinic (Cash)
+                        </button>
+                      </>
+                    )}
+                  </div>
                 )}
 
                 <button
@@ -136,7 +179,7 @@ const MyAppointments = () => {
                       toast.error("Cancel failed");
                     }
                   }}
-                  className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-red-500 hover:text-white transition"
+                  className="sm:min-w-48 py-2 border rounded text-sm text-stone-500 hover:bg-red-500 hover:text-white transition cursor-pointer"
                 >
                   Cancel appointment
                 </button>
@@ -144,8 +187,8 @@ const MyAppointments = () => {
             )}
 
             {item.isPaid && !item.isCancelled && (
-              <span className="text-green-600 font-medium text-sm text-center">
-                Payment Completed
+              <span className="sm:min-w-48 py-2 border border-green-500 rounded text-sm text-green-500 text-center font-medium bg-green-50">
+                Paid ({item.paymentMethod === "online" ? "Stripe Online" : "Clinic Cash"})
               </span>
             )}
 
