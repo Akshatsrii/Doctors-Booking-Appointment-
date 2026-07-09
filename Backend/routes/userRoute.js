@@ -9,6 +9,8 @@ import {
   payAppointment,
   cancelAppointment,
   confirmPayment,
+  verifyStripe,
+  selectPaymentMethod,
 } from "../controllers/userController.js";
 import upload from "../middlewares/multer.js";
 import authUser from "../middlewares/authUser.js";
@@ -36,6 +38,8 @@ userRouter.post("/my-appointments", authUser, myAppointments);
 // 💳 PAYMENT
 userRouter.post("/pay-appointment", authUser, payAppointment);
 userRouter.post("/confirm-payment", authUser, confirmPayment);
+userRouter.post("/verify-stripe", authUser, verifyStripe);
+userRouter.post("/select-payment-method", authUser, selectPaymentMethod);
 
 // ❌ CANCEL
 userRouter.post("/cancel-appointment", authUser, cancelAppointment);
