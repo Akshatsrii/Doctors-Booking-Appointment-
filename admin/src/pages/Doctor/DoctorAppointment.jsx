@@ -4,7 +4,7 @@ import { X, Check } from "lucide-react";
 import { toast } from "react-toastify";
 
 const DoctorAppointment = () => {
-  const { getDoctorAppointments, appointments, loading, cancelAppointmentDoctor, completeAppointmentDoctor, addPrescriptionDoctor } =
+  const { getDoctorAppointments, appointments, loading, cancelAppointmentDoctor, completeAppointmentDoctor, addPrescriptionDoctor, markPaymentPaidDoctor } =
     useDoctorContext();
 
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
@@ -134,9 +134,28 @@ const DoctorAppointment = () => {
 
                     {/* Payment */}
                     <td className="px-5 py-4">
-                      <span className="px-3 py-1 text-xs font-semibold rounded-full border border-gray-300 text-gray-700">
-                        {item.isPaid ? "ONLINE" : "CASH"}
-                      </span>
+                      <div className="flex flex-col gap-1 items-start">
+                        {item.isPaid ? (
+                          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-50 border border-green-200 text-green-600">
+                            {item.paymentMethod === "online" ? "Paid (Online)" : "Paid (Clinic)"}
+                          </span>
+                        ) : (
+                          <>
+                            <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-50 border border-yellow-200 text-yellow-600 mb-1">
+                              {item.paymentMethod === "cash" ? "Clinic (Unpaid)" : "Online (Unpaid)"}
+                            </span>
+                            {!isCancelled && (
+                              <button
+                                onClick={() => markPaymentPaidDoctor(item._id)}
+                                className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline cursor-pointer"
+                                title="Mark as Paid"
+                              >
+                                Mark Paid
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </td>
 
                     {/* Age */}

@@ -3,7 +3,7 @@ import axios from "axios";
 import { useAdminContext } from "../../context/AdminContext";
 
 const AllAppointments = () => {
-  const { appointments, getAllAppointments } = useAdminContext();
+  const { appointments, getAllAppointments, markPaymentPaidAdmin } = useAdminContext();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const aToken = localStorage.getItem("aToken");
 
@@ -104,32 +104,43 @@ const AllAppointments = () => {
                 <td className="py-3 px-2">₹{item.amount}</td>
 
                 {/* STATUS */}
-                <td className="py-3 px-2">
+                 <td className="py-3 px-2">
                   {item.isCancelled ? (
-                    <span className="text-red-500 font-medium">
+                    <span className="text-red-500 font-semibold text-xs px-2.5 py-1 bg-red-50 rounded-full border border-red-200">
                       Cancelled
                     </span>
                   ) : item.isPaid ? (
-                    <span className="text-green-600 font-medium">
-                      Paid
+                    <span className="text-green-600 font-semibold text-xs px-2.5 py-1 bg-green-50 rounded-full border border-green-200">
+                      {item.paymentMethod === "online" ? "Paid (Online)" : "Paid (Clinic)"}
                     </span>
                   ) : (
-                    <span className="text-yellow-500 font-medium">
-                      Pending
+                    <span className="text-yellow-600 font-semibold text-xs px-2.5 py-1 bg-yellow-50 rounded-full border border-yellow-200">
+                      {item.paymentMethod === "cash" ? "Clinic (Unpaid)" : "Online (Unpaid)"}
                     </span>
                   )}
                 </td>
 
                 {/* ACTIONS */}
                 <td className="py-3 px-2">
-                  {!item.isCancelled && (
-                    <button
-                      onClick={() => cancelAppointment(item._id)}
-                      className="px-3 py-1 text-xs rounded bg-red-500 text-white hover:bg-red-600"
-                    >
-                      Cancel
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {!item.isPaid && !item.isCancelled && (
+                      <button
+                        onClick={() => markPaymentPaidAdmin(item._id)}
+                        className="px-2.5 py-1 text-xs font-semibold rounded bg-emerald-500 text-white hover:bg-emerald-600 transition cursor-pointer"
+                        title="Mark as Paid"
+                      >
+                        Mark Paid
+                      </button>
+                    )}
+                    {!item.isCancelled && !item.isCompleted && (
+                      <button
+                        onClick={() => cancelAppointment(item._id)}
+                        className="px-2.5 py-1 text-xs font-semibold rounded bg-red-500 text-white hover:bg-red-600 transition cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
