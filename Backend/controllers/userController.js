@@ -235,6 +235,8 @@ const payAppointment = async (req, res) => {
       return res.json({ success: false, message: "Appointment not found or cancelled" });
     }
 
+    const originUrl = req.headers.origin || process.env.FRONTEND_URL || "http://localhost:5173";
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "upi"],
       mode: "payment",
@@ -251,8 +253,8 @@ const payAppointment = async (req, res) => {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.FRONTEND_URL}/verify-payment?success=true&appointmentId=${appointmentId}`,
-      cancel_url: `${process.env.FRONTEND_URL}/verify-payment?success=false&appointmentId=${appointmentId}`,
+      success_url: `${originUrl}/verify-payment?success=true&appointmentId=${appointmentId}`,
+      cancel_url: `${originUrl}/verify-payment?success=false&appointmentId=${appointmentId}`,
     });
 
     res.json({
