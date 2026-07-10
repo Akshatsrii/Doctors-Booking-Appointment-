@@ -21,6 +21,15 @@
 
 ---
 
+## 🔗 Live Demo
+
+| Portal | Link | Description |
+| --- | --- | --- |
+| 👤 **Patient Portal** | [doctors-booking-appointment.vercel.app](https://doctors-booking-appointment.vercel.app/) | Search doctors, book appointments, pay online, chat with AI |
+| 🛠️ **Admin & Doctor Console** | [doctors-booking-appointment-j23z.vercel.app](https://doctors-booking-appointment-j23z.vercel.app/) | Manage doctors, appointments, prescriptions & analytics |
+
+---
+
 ## ✨ Overview
 
 **Prescripto** connects patients, doctors, and clinic administrators in one unified platform. Patients can discover doctors, book appointments, pay online, chat with an AI health assistant, and access digital prescriptions — while doctors and admins manage the entire clinical workflow from dedicated dashboards.
