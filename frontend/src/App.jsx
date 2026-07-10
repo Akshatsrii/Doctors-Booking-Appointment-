@@ -1,5 +1,5 @@
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import React, { useContext, useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
@@ -16,8 +16,21 @@ import VerifyPayment from './pages/VerifyPayment'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ChatBot from './components/ChatBot'   // ✅ CHATBOT IMPORT
+import { AppContext } from './context/AppContext'
 
 const App = () => {
+  const { token } = useContext(AppContext)
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (!token && location.pathname !== '/login') {
+      navigate('/login')
+    } else if (token && location.pathname === '/login') {
+      navigate('/')
+    }
+  }, [token, location.pathname, navigate])
+
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8">
       <ToastContainer />
