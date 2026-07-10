@@ -18,7 +18,7 @@ const AddDoctor = () => {
     phone: "",
     speciality: "General physician",
     degree: "",
-    experience: "1 Year",
+    experience: "",
     gender: "Male",
     fees: "",
     address1: "",
@@ -121,7 +121,7 @@ const AddDoctor = () => {
           phone: "",
           speciality: "General physician",
           degree: "",
-          experience: "1 Year",
+          experience: "",
           gender: "Male",
           fees: "",
           address1: "",
@@ -293,17 +293,14 @@ const AddDoctor = () => {
 
                 <div className="input-wrapper">
                   <label className="input-label">Experience *</label>
-                  <select
+                  <input
                     name="experience"
                     value={data.experience}
                     onChange={handleChange}
+                    placeholder="e.g. 5 Years"
                     className="input"
-                  >
-                    <option>1 Year</option>
-                    <option>2 Years</option>
-                    <option>3 Years</option>
-                    <option>5+ Years</option>
-                  </select>
+                    required
+                  />
                 </div>
 
                 <div className="input-wrapper">
