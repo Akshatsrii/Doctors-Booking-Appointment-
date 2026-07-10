@@ -24,7 +24,8 @@ const App = () => {
   const location = useLocation()
 
   useEffect(() => {
-    if (!token && location.pathname !== '/login') {
+    const protectedRoutes = ['/my-profile', '/my-appointments', '/verify-payment']
+    if (!token && protectedRoutes.includes(location.pathname)) {
       navigate('/login')
     } else if (token && location.pathname === '/login') {
       navigate('/')

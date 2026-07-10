@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import RelatedDoctors from '../components/RelatedDoctors'
@@ -9,6 +9,7 @@ import { toast } from 'react-toastify'
 const Appointment = () => {
 
   const { docId } = useParams()
+  const navigate = useNavigate()
   const {
     doctors,
     currencySymbol,
@@ -89,7 +90,8 @@ const Appointment = () => {
   /* ================= BOOK APPOINTMENT ================= */
   const bookAppointment = async () => {
     if (!token) {
-      toast.error("Please login to book appointment")
+      toast.warn("Please login to book an appointment.")
+      navigate('/login')
       return
     }
 
