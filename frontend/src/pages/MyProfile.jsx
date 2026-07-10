@@ -1,15 +1,19 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { AppContext } from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const MyProfile = () => {
-  const { backendUrl, token, userData, setUserData } =
-    useContext(AppContext);
+  const { backendUrl, token, userData, setUserData } = useContext(AppContext);
 
   const [isEdit, setIsEdit] = useState(false);
   const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [formData, setFormData] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const MAX_IMAGE_SIZE_MB = 5;
 
   /* ================= LOAD USER DATA ================= */
   useEffect(() => {
@@ -27,29 +31,107 @@ const MyProfile = () => {
     }
   }, [userData]);
 
-  if (!formData) return null;
+  /* ================= CLEANUP OBJECT URL (avoid memory leaks) ================= */
+  useEffect(() => {
+    if (image) {
+      const url = URL.createObjectURL(image);
+      setImagePreview(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setImagePreview(null);
+  }, [image]);
+
+  /* ================= ESC KEY CANCELS EDIT ================= */
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape" && isEdit) {
+        handleCancel();
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit]);
+
+  if (!formData) {
+    return (
+      <div className="max-w-4xl mx-auto p-8">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden animate-pulse">
+          <div className="bg-gray-200 h-32" />
+          <div className="px-8 pb-8">
+            <div className="w-32 h-32 rounded-full bg-gray-200 -mt-16 mb-8" />
+            <div className="space-y-3">
+              <div className="h-4 w-1/3 bg-gray-200 rounded" />
+              <div className="h-4 w-1/2 bg-gray-200 rounded" />
+              <div className="h-4 w-2/3 bg-gray-200 rounded" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   /* ================= IMAGE HANDLER ================= */
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        toast.error('Please upload a valid image file (JPEG, PNG, GIF, or WEBP)');
-        return;
-      }
-      setImage(file);
+    if (!file) return;
+
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      toast.error("Please upload a valid image file (JPEG, PNG, GIF, or WEBP)");
+      e.target.value = "";
+      return;
     }
+
+    if (file.size > MAX_IMAGE_SIZE_MB * 1024 * 1024) {
+      toast.error(`Image must be smaller than ${MAX_IMAGE_SIZE_MB}MB`);
+      e.target.value = "";
+      return;
+    }
+
+    setImage(file);
+  };
+
+  /* ================= CANCEL EDIT ================= */
+  const handleCancel = () => {
+    setFormData({
+      name: userData.name || "",
+      phone: userData.phone || "",
+      gender: userData.gender || "Not Selected",
+      dob: userData.dob || "",
+      address: {
+        line1: userData.address?.line1 || "",
+        line2: userData.address?.line2 || "",
+      },
+    });
+    setImage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setIsEdit(false);
+  };
+
+  /* ================= VALIDATION ================= */
+  const validate = () => {
+    if (!formData.name.trim()) {
+      toast.error("Name cannot be empty");
+      return false;
+    }
+    if (formData.phone && !/^[0-9+\-\s()]{7,15}$/.test(formData.phone.trim())) {
+      toast.error("Enter a valid phone number");
+      return false;
+    }
+    return true;
   };
 
   /* ================= SAVE PROFILE ================= */
   const handleSave = async () => {
+    if (!validate()) return;
+
+    setSaving(true);
     try {
       const data = new FormData();
 
-      data.append("name", formData.name);
-      data.append("phone", formData.phone);
+      data.append("name", formData.name.trim());
+      data.append("phone", formData.phone.trim());
       data.append("gender", formData.gender);
       data.append("dob", formData.dob);
       data.append("address", JSON.stringify(formData.address));
@@ -71,15 +153,22 @@ const MyProfile = () => {
         setUserData((prev) => ({
           ...prev,
           ...formData,
-          image: image ? URL.createObjectURL(image) : prev.image,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          image: image ? imagePreview : prev.image,
         }));
         setIsEdit(false);
         setImage(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         toast.error(res.data.message);
       }
     } catch (error) {
-      toast.error("Update failed. Please try again.");
+      toast.error(
+        error.response?.data?.message || "Update failed. Please try again."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -95,18 +184,18 @@ const MyProfile = () => {
             <div className="relative group">
               <div className="w-32 h-32 rounded-full ring-4 ring-white shadow-xl overflow-hidden bg-gray-100">
                 <img
-                  src={
-                    image
-                      ? URL.createObjectURL(image)
-                      : userData.image || "/default-avatar.png"
-                  }
-                  alt="Profile"
+                  src={imagePreview || userData.image || "/default-avatar.png"}
+                  alt={userData.name ? `${userData.name}'s profile` : "Profile"}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/default-avatar.png";
+                  }}
                 />
               </div>
 
               {isEdit && (
-                <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full cursor-pointer opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
                   <div className="text-white text-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -131,9 +220,10 @@ const MyProfile = () => {
                     <span className="text-xs font-medium">Change Photo</span>
                   </div>
                   <input
+                    ref={fileInputRef}
                     type="file"
                     hidden
-                    accept="image/*"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                     onChange={handleImageChange}
                   />
                 </label>
@@ -145,15 +235,19 @@ const MyProfile = () => {
                 <input
                   className="text-2xl font-bold text-gray-800 border-b-2 border-primary px-3 py-2 focus:outline-none bg-transparent w-full"
                   value={formData.name}
+                  maxLength={60}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder="Your Name"
+                  placeholder="Your name"
                 />
               ) : (
                 <h1 className="text-3xl font-bold text-gray-800">{userData.name}</h1>
               )}
               <p className="text-gray-500 mt-1">{userData.email}</p>
+              {isEdit && image && (
+                <p className="text-xs text-primary mt-1">New photo selected</p>
+              )}
             </div>
           </div>
 
@@ -180,17 +274,18 @@ const MyProfile = () => {
             <div className="grid gap-4">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Email Address
+                  Email address
                 </label>
                 <p className="text-gray-800">{userData.email}</p>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Phone Number
+                  Phone number
                 </label>
                 {isEdit ? (
                   <input
+                    type="tel"
                     className="w-full border-2 border-gray-300 px-3 py-2 rounded-lg focus:border-primary focus:outline-none bg-white text-gray-800"
                     value={formData.phone}
                     onChange={(e) =>
@@ -298,11 +393,12 @@ const MyProfile = () => {
 
               <div className="bg-gray-50 p-4 rounded-lg">
                 <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Date of Birth
+                  Date of birth
                 </label>
                 {isEdit ? (
                   <input
                     type="date"
+                    max={new Date().toISOString().split("T")[0]}
                     className="w-full border-2 border-gray-300 px-3 py-2 rounded-lg focus:border-primary focus:outline-none bg-white text-gray-800"
                     value={formData.dob}
                     onChange={(e) =>
@@ -316,17 +412,27 @@ const MyProfile = () => {
             </div>
           </div>
 
-          {/* ================= EDIT/SAVE BUTTON ================= */}
-          <div className="mt-8 flex justify-center">
+          {/* ================= EDIT/SAVE/CANCEL BUTTONS ================= */}
+          <div className="mt-8 flex justify-center gap-3">
+            {isEdit && (
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="px-8 py-3 rounded-full font-semibold text-base border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+            )}
             <button
               onClick={isEdit ? handleSave : () => setIsEdit(true)}
-              className={`px-10 py-3 rounded-full font-semibold text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+              disabled={saving}
+              className={`px-10 py-3 rounded-full font-semibold text-base transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 ${
                 isEdit
                   ? "bg-primary text-white hover:bg-primary/90"
                   : "bg-white text-primary border-2 border-primary hover:bg-primary hover:text-white"
               }`}
             >
-              {isEdit ? "💾 Save Changes" : "✏️ Edit Profile"}
+              {isEdit ? (saving ? "Saving..." : "Save changes") : "Edit profile"}
             </button>
           </div>
         </div>

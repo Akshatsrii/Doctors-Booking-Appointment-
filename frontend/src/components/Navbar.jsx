@@ -15,10 +15,18 @@ const Navbar = () => {
   // Get profile image from context or use default
   const profileImage = userData?.image || assets.profile_pic;
 
-  // Handle scroll effect with smooth transitions
+  // Close mobile menu on route change
   useEffect(() => {
     setShowMenu(false);
   }, [location.pathname]);
+
+  // Shrink navbar on scroll (this listener was missing before, so `scrolled` never changed)
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -33,11 +41,7 @@ const Navbar = () => {
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
-    if (showMenu) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    document.body.style.overflow = showMenu ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -58,34 +62,36 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Enhanced Backdrop for mobile menu */}
+      {/* Backdrop for mobile menu */}
       {showMenu && (
         <div
-          className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/40 z-40 md:hidden backdrop-blur-md animate-fadeIn"
+          className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/50 to-black/40 z-40 md:hidden backdrop-blur-md animate-[fadeIn_0.3s_ease-out]"
           onClick={() => setShowMenu(false)}
         />
       )}
 
       <nav
         className={`sticky top-0 z-30 bg-white/95 backdrop-blur-md transition-all duration-500 ${
-          scrolled 
-            ? "shadow-lg shadow-blue-100/50 py-2.5" 
+          scrolled
+            ? "shadow-lg shadow-blue-100/50 py-2.5"
             : "py-4 border-b border-gray-100"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* LOGO with enhanced animation */}
-            <div className="flex-shrink-0 transform transition-transform hover:scale-105 duration-300">
+
+            {/* LOGO with heartbeat pulse dot — hospital touch */}
+            <div className="flex items-center gap-2 flex-shrink-0 transform transition-transform hover:scale-105 duration-300">
               <img
                 className="w-40 sm:w-44 cursor-pointer drop-shadow-sm"
                 src={assets.logo}
                 alt="Logo"
                 onClick={() => navigate("/")}
               />
+              <span className="hidden sm:inline-flex w-2 h-2 rounded-full bg-green-500 animate-pulse" title="System online" />
             </div>
 
-            {/* DESKTOP NAVIGATION with enhanced effects */}
+            {/* DESKTOP NAVIGATION */}
             <ul className="hidden md:flex items-center gap-1 lg:gap-2 font-medium">
               {navLinks.map(({ path, label }) => (
                 <NavLink key={path} to={path}>
@@ -118,7 +124,7 @@ const Navbar = () => {
               ))}
             </ul>
 
-            {/* RIGHT SIDE ACTIONS with enhanced styling */}
+            {/* RIGHT SIDE ACTIONS */}
             <div className="flex items-center gap-3 sm:gap-4">
               {token ? (
                 <div className="relative" ref={dropdownRef}>
@@ -149,7 +155,7 @@ const Navbar = () => {
                     />
                   </button>
 
-                  {/* ENHANCED DROPDOWN MENU */}
+                  {/* DROPDOWN MENU */}
                   <div
                     className={`absolute right-0 mt-3 w-56 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 origin-top-right ${
                       showDropdown
@@ -259,7 +265,7 @@ const Navbar = () => {
                 </button>
               )}
 
-              {/* MOBILE MENU ICON with animation */}
+              {/* MOBILE MENU ICON */}
               <button
                 onClick={() => setShowMenu(true)}
                 className="md:hidden p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 hover:scale-110 active:scale-95"
@@ -272,13 +278,13 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ENHANCED MOBILE MENU */}
+      {/* MOBILE MENU */}
       <div
         className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-gradient-to-br from-white to-gray-50 z-50 shadow-2xl transform transition-all duration-500 ease-out ${
           showMenu ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
         }`}
       >
-        {/* Mobile Menu Header with gradient */}
+        {/* Mobile Menu Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 opacity-10" />
           <div className="relative flex items-center justify-between px-6 py-5 border-b border-gray-200">
@@ -301,7 +307,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation Links with icons and animations */}
+        {/* Mobile Navigation Links */}
         <div className="overflow-y-auto h-[calc(100%-80px)] px-4">
           <ul className="flex flex-col gap-2 mt-6 text-base font-medium">
             {navLinks.map(({ path, label, icon }, index) => (
@@ -309,8 +315,8 @@ const Navbar = () => {
                 key={path}
                 to={path}
                 onClick={() => setShowMenu(false)}
-                style={{ animationDelay: `${index * 50}ms` }}
-                className="animate-slideInRight"
+                style={{ animationDelay: `${index * 60}ms` }}
+                className="block opacity-0 animate-[slideInRight_0.4s_ease-out_forwards]"
               >
                 {({ isActive }) => (
                   <li
@@ -357,19 +363,19 @@ const Navbar = () => {
             ))}
           </ul>
 
-          {/* Enhanced Mobile User Section */}
+          {/* Mobile User Section */}
           {token && (
-            <div className="mt-8 pb-8 animate-fadeIn">
+            <div className="mt-8 pb-8 animate-[fadeIn_0.4s_ease-out]">
               <div className="relative bg-gradient-to-br from-blue-50 via-white to-blue-50 rounded-2xl p-5 shadow-lg border border-blue-100 overflow-hidden">
                 {/* Decorative background */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200 rounded-full filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-200 rounded-full filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2" />
-                
+
                 <div className="relative space-y-3">
                   <div className="flex items-center gap-4 pb-4 border-b border-blue-200">
                     <div className="relative">
                       <img
-                        className="w-14 h-14 rounded-2xl object-cover border-3 border-white shadow-lg"
+                        className="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-lg"
                         src={profileImage}
                         alt="Profile"
                         onError={(e) => {
@@ -383,7 +389,7 @@ const Navbar = () => {
                       <p className="text-sm text-gray-600">Manage your account</p>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => {
                       navigate("/my-profile");
@@ -408,7 +414,7 @@ const Navbar = () => {
                     </div>
                     <span className="font-semibold">My Profile</span>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       navigate("/my-appointments");
@@ -433,7 +439,7 @@ const Navbar = () => {
                     </div>
                     <span className="font-semibold">My Appointments</span>
                   </button>
-                  
+
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-3.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-all duration-300 flex items-center gap-3 font-semibold group hover:shadow-md border border-transparent hover:border-red-100"
@@ -461,38 +467,6 @@ const Navbar = () => {
           )}
         </div>
       </div>
-
-      {/* Add custom animations */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        
-        .animate-slideInRight {
-          animation: slideInRight 0.4s ease-out forwards;
-          opacity: 0;
-        }
-      `}</style>
     </>
   );
 };
