@@ -65,7 +65,7 @@ const Contact = () => {
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth='2' d='M15 11a3 3 0 11-6 0 3 3 0 016 0z' />
               </svg>
             </div>
-            <p className='text-gray-500'>54709 Willms Station <br /> Suite 350, Washington, USA</p>
+            <p className='text-gray-500'>221, Vaishali Nagar, <br /> Jaipur, Rajasthan – 302021</p>
           </div>
 
           <div className='flex items-start gap-3'>
@@ -75,8 +75,8 @@ const Contact = () => {
               </svg>
             </div>
             <p className='text-gray-500'>
-              Tel: <a href="tel:+14155550132" className='hover:text-[#5f6FFF] transition-colors'>(415) 555-0132</a><br />
-              Email: <a href="mailto:greatstackdev@gmail.com" className='hover:text-[#5f6FFF] transition-colors'>greatstackdev@gmail.com</a>
+              Tel: <a href="tel:+919876543210" className='hover:text-[#5f6FFF] transition-colors'>+91-98765-43210</a><br />
+              Email: <a href="mailto:contact@akshathospital.com" className='hover:text-[#5f6FFF] transition-colors'>contact@akshathospital.com</a>
             </p>
           </div>
 
