@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
 
 const Login = ({ setShowLogin }) => {
   const [state, setState] = useState("Sign Up");
@@ -9,11 +11,21 @@ const Login = ({ setShowLogin }) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { setToken } = useContext(AppContext);
+  const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
+  const handleClose = () => {
+    if (setShowLogin) {
+      setShowLogin(false);
+    } else {
+      navigate("/");
+    }
+  };
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    loading || setLoading(true);
 
     try {
       if (state === "Sign Up") {
@@ -36,8 +48,8 @@ const Login = ({ setShowLogin }) => {
 
         if (data.success) {
           toast.success("Login successful");
-          localStorage.setItem("token", data.token);
-          setShowLogin(false); // ✅ close modal instead of navigating away
+          setToken(data.token);
+          handleClose();
         } else {
           toast.error(data.message);
         }
@@ -52,7 +64,7 @@ const Login = ({ setShowLogin }) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
-      onClick={() => setShowLogin(false)}
+      onClick={handleClose}
     >
       <div
         onClick={(e) => e.stopPropagation()} // card के अंदर click करने पर modal close न हो
@@ -61,7 +73,7 @@ const Login = ({ setShowLogin }) => {
         {/* Close button */}
         <button
           type="button"
-          onClick={() => setShowLogin(false)}
+          onClick={handleClose}
           aria-label="Close"
           className="absolute top-5 right-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
         >
