@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
+import { AppContext } from "../context/AppContext";
 
 const ChatBot = () => {
+  const { backendUrl } = useContext(AppContext);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
     { from: "bot", text: "Hi 👋 I am Prescrito. How can I help you today?" }
@@ -28,7 +30,7 @@ const ChatBot = () => {
     setIsTyping(true);
 
     try {
-      const res = await axios.post("http://localhost:4000/api/chatbot", {
+      const res = await axios.post(`${backendUrl}/api/chatbot`, {
         message: userMessage,
         language
       });
